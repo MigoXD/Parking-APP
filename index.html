@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarSpot - Find Parking Easily</title>
+    <style>
+        :root {
+            --primary: #3498db;
+            --primary-dark: #2980b9;
+            --secondary: #2ecc71;
+            --dark: #34495e;
+            --light: #ecf0f1;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --gray: #95a5a6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo-icon {
+            margin-right: 8px;
+            font-size: 1.8rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin-left: 1.5rem;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: var(--light);
+        }
+        
+        .hamburger {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .search-box {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 1200px;
+            position: sticky;
+            top: 60px;
+            z-index: 99;
+        }
+        
+        .search-input {
+            display: flex;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        
+        .search-input input {
+            flex-grow: 1;
+            padding: 0.8rem;
+            border: 1px solid var(--gray);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .search-input button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0 1.5rem;
+            margin-left: 0.5rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .search-input button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border: 1px solid var(--gray);
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+        }
+        
+        .autocomplete-item {
+            padding: 0.8rem;
+            cursor: pointer;
+        }
+        
+        .autocomplete-item:hover {
+            background-color: var(--light);
+        }
+        
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .filter-item {
+            display: flex;
+            align-items: center;
+            background-color: var(--light);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .filter-item label {
+            margin-right: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .filter-item select {
+            border: none;
+            background-color: transparent;
+            font-size: 0.9rem;
+        }
+        
+        .filter-summary {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--dark);
+        }
+        
+        .map-container {
+            height: 500px;
+            background-color: #ccc;
+            margin: 1rem auto;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            max-width: 1200px;
+        }
+        
+        .map-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .map-overlay {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            padding: 1rem;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 250px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .availability-legend {
+            margin-bottom: 1rem;
+        }
+        
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.3rem;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .color-high {
+            background-color: var(--secondary);
+        }
+        
+        .color-medium {
+            background-color: var(--warning);
+        }
+        
+        .color-low {
+            background-color: var(--danger);
+        }
+        
+        .community-report {
+            margin-top: 1rem;
+        }
+        
+        .community-report button {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+        }
+        
+        .community-report button:hover {
+            background-color: #27ae60;
+        }
+        
+        .parking-list {
+            margin: 1rem auto;
+            max-width: 1200px;
+        }
+        
+        .section-title {
+            margin: 1rem auto;
+            font-size: 1.5rem;
+            color: var(--dark);
+            max-width: 1200px;
+        }
+        
+        .parking-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+        
+        .parking-card {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            position: relative;
+        }
+        
+        .parking-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-image {
+            height: 150px;
+            background-color: #ddd;
+        }
+        
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .card-content {
+            padding: 1rem;
+        }
+        
+        .parking-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .parking-address {
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .parking-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+        
+        .parking-price {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .availability {
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .high {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: var(--secondary);
+        }
+        
+        .medium {
+            background-color: rgba(243, 156, 18, 0.2);
+            color: var(--warning);
+        }
+        
+        .low {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: var(--danger);
+        }
+        
+        .card-actions {
+            display: flex;
+            border-top: 1px solid #eee;
+        }
+        
+        .card-action-btn {
+            flex: 1;
+            padding: 0.8rem;
+            background: none;
+            border: none;
+            font-weight: 500;
+            color: var(--primary);
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .card-action-btn:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        
+        .card-action-btn:first-child {
+            border-right: 1px solid #eee;
+        }
+        
+        .favorite-btn.saved {
+            color: var(--secondary);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .modal-content h3 {
+            margin-bottom: 1rem;
+        }
+        
+        .modal-content p {
+            margin-bottom: 0.5rem;
+        }
+        
+        .comparison-tool {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 1200px;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .comparison-table th, .comparison-table td {
+            padding: 0.8rem;
+            border: 1px solid #eee;
+            text-align: left;
+        }
+        
+        .comparison-table th {
+            background-color: var(--light);
+            font-weight: bold;
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            display: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .back-to-top:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .loading-spinner {
+            border: 4px solid var(--light);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .footer-section {
+            flex: 1;
+            margin-right: 2rem;
+        }
+        
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .footer-links a {
+            color: var(--light);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 60px;
+                left: 0;
+                right: 3;
+                background-color: var(--primary);
+                padding: 1rem;
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .hamburger {
+                display: block;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+            
+            .filter-item {
+                width: 100%;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+            }
+            
+            .footer-section {
+                margin-bottom: 2rem;
+                margin-right: 0;
+            }
+            
+            .map-overlay {
+                width: 90%;
+                left: 50%;
+                transform: translateX(-50%);
+                right: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+    
+    <header>
+        <nav>
+            <div class="logo">
+                <span class="logo-icon">🅿️</span> CarSpot
+            </div>
+            <span class="hamburger">☰</span>
+            <ul class="nav-links">
+                <li><a href="#">Home</a></li>
+                <li><a href="#">Find Parking</a></li>
+                <li><a href="#">My Favorites</a></li>
+                <li><a href="#">Account</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <div class="search-box">
+            <div class="search-input">
+                <input type="text" id="search-input" placeholder="Enter destination, address or landmark...">
+                <div class="autocomplete-dropdown" id="autocomplete-dropdown"></div>
+                <button id="search-button">Search</button>
+            </div>
+            <div class="filters">
+                <div class="filter-item">
+                    <label>Price:</label>
+                    <select id="filter-price">
+                        <option value="any">Any</option>
+                        <option value="0-5">$0-$5</option>
+                        <option value="5-10">$5-$10</option>
+                        <option value="10-20">$10-$20</option>
+                        <option value="20+">$20+</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>Distance:</label>
+                    <select id="filter-distance">
+                        <option value="any">Any</option>
+                        <option value="0.5">< 0.5 km</option>
+                        <option value="1">< 1 km</option>
+                        <option value="2">< 2 km</option>
+                        <option value="5">< 5 km</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>Availability:</label>
+                    <select id="filter-availability">
+                        <option value="any">Any</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>Type:</label>
+                    <select id="filter-type">
+                        <option value="any">Any</option>
+                        <option value="street">Street Parking</option>
+                        <option value="garage">Parking Garage</option>
+                        <option value="private">Private Lot</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-summary" id="filter-summary">No filters applied</div>
+        </div>
+        
+        <div class="map-container">
+            <img src="/api/placeholder/1200/500?text=Map+of+Adelaide+with+Parking+Markers" alt="Map showing parking locations">
+            <div class="map-overlay">
+                <div class="availability-legend">
+                    <div class="legend-title">Parking Availability</div>
+                    <div class="legend-item">
+                        <div class="legend-color color-high"></div>
+                        <div>High (Many spots)</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-medium"></div>
+                        <div>Medium (Few spots)</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-low"></div>
+                        <div>Low (Almost full)</div>
+                    </div>
+                </div>
+                <div class="community-report">
+                    <button id="report-button">Report Parking Availability</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="comparison-tool">
+            <h3>Compare Parking Options</h3>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Distance</th>
+                        <th>Availability</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>UPark Rundle Street</td>
+                        <td>$4/hour</td>
+                        <td>0.3 km</td>
+                        <td>High</td>
+                    </tr>
+                    <tr>
+                        <td>Wilson Parking</td>
+                        <td>$7/hour</td>
+                        <td>0.5 km</td>
+                        <td>Medium</td>
+                    </tr>
+                    <tr>
+                        <td>North Terrace Street</td>
+                        <td>$3.50/hour</td>
+                        <td>0.2 km</td>
+                        <td>Medium</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <h2 class="section-title">Nearby Parking Options</h2>
+        
+        <div class="parking-list">
+            <div class="parking-grid">
+                <div class="parking-card" data-id="1">
+                    <div class="card-image">
+                        <img src="/api/placeholder/300/150?text=UPark+Rundle+Street" alt="UPark Rundle Street">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="parking-name">UPark Rundle Street</h3>
+                        <p class="parking-address">163-185 Rundle St, Adelaide CBD</p>
+                        <div class="parking-details">
+                            <div class="parking-price">$4/hour</div>
+                            <div class="availability high">High Availability</div>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="card-action-btn details-btn">Details</button>
+                        <button class="card-action-btn favorite-btn">Save</button>
+                    </div>
+                </div>
+                
+                <div class="parking-card" data-id="2">
+                    <div class="card-image">
+                        <img src="/api/placeholder/300/150?text=Wilson+Parking" alt="Wilson Parking">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="parking-name">Wilson Parking</h3>
+                        <p class="parking-address">45 King William St, Adelaide</p>
+                        <div class="parking-details">
+                            <div class="parking-price">$7/hour</div>
+                            <div class="availability medium">Medium Availability</div>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="card-action-btn details-btn">Details</button>
+                        <button class="card-action-btn favorite-btn">Save</button>
+                    </div>
+                </div>
+                
+                <div class="parking-card" data-id="3">
+                    <div class="card-image">
+                        <img src="/api/placeholder/300/150?text=Rundle+Mall+Parking" alt="Rundle Mall Parking">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="parking-name">Rundle Mall Parking</h3>
+                        <p class="parking-address">Rundle Mall, Adelaide</p>
+                        <div class="parking-details">
+                            <div class="parking-price">$8.50/hour</div>
+                            <div class="availability low">Low Availability</div>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="card-action-btn details-btn">Details</button>
+                        <button class="card-action-btn favorite-btn">Save</button>
+                    </div>
+                </div>
+                
+                <div class="parking-card" data-id="4">
+                    <div class="card-image">
+                        <img src="/api/placeholder/300/150?text=North+Terrace+Street" alt="Street Parking - North Terrace">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="parking-name">Street Parking - North Terrace</h3>
+                        <p class="parking-address">North Terrace, Adelaide</p>
+                        <div class="parking-details">
+                            <div class="parking-price">$3.50/hour</div>
+                            <div class="availability medium">Medium Availability</div>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="card-action-btn details-btn">Details</button>
+                        <button class="card-action-btn favorite-btn">Save</button>
+                    </div>
+                </div>
+                
+                <div class="parking-card" data-id="5">
+                    <div class="card-image">
+                        <img src="/api/placeholder/300/150?text=Hindley+Street+Zone" alt="Street Parking - Hindley Street">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="parking-name">Street Parking - Hindley Street</h3>
+                        <p class="parking-address">Hindley St, Adelaide</p>
+                        <div class="parking-details">
+                            <div class="parking-price">$3/hour</div>
+                            <div class="availability low">Low Availability</div>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="card-action-btn details-btn">Details</button>
+                        <button class="card-action-btn favorite-btn">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <div class="modal" id="parking-modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h3 id="modal-title"></h3>
+            <p id="modal-address"></p>
+            <p id="modal-price"></p>
+            <p id="modal-availability"></p>
+            <p id="modal-hours">Operating Hours: 7:00 AM - 10:00 PM</p>
+            <p id="modal-restrictions">Restrictions: 2-hour limit for street parking</p>
+        </div>
+    </div>
+    
+    <button class="back-to-top" id="back-to-top">↑</button>
+    
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>CarSpot</h3>
+                <p>Find the perfect parking spot in real-time. Save time, reduce stress, and never circle for parking again.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">How It Works</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Support</h3>
+                <ul class="footer-links">
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="copyright">
+            © 2025 CarSpot. All rights reserved.
+        </div>
+    </footer>
+    
+    <script>
+        // Simulated parking data for autocomplete and modal
+        const parkingData = [
+            { id: 1, name: "UPark Rundle Street", address: "163-185 Rundle St, Adelaide CBD", price: "$4/hour", availability: "High", hours: "7:00 AM - 10:00 PM", restrictions: "None" },
+            { id: 2, name: "Wilson Parking", address: "45 King William St, Adelaide", price: "$7/hour", availability: "Medium", hours: "6:00 AM - 11:00 PM", restrictions: "None" },
+            { id: 3, name: "Rundle Mall Parking", address: "Rundle Mall, Adelaide", price: "$8.50/hour", availability: "Low", hours: "8:00 AM - 9:00 PM", restrictions: "None" },
+            { id: 4, name: "Street Parking - North Terrace", address: "North Terrace, Adelaide", price: "$3.50/hour", availability: "Medium", hours: "7:00 AM - 6:00 PM", restrictions: "2-hour limit" },
+            { id: 5, name: "Street Parking - Hindley Street", address: "Hindley St, Adelaide", price: "$3/hour", availability: "Low", hours: "7:00 AM - 6:00 PM", restrictions: "1-hour limit" }
+        ];
+        
+        // Simulate loading animation
+        window.addEventListener('load', () => {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.style.display = 'flex';
+            setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+            }, 1000);
+        });
+        
+        // Hamburger menu toggle
+        document.querySelector('.hamburger').addEventListener('click', () => {
+            document.querySelector('.nav-links').classList.toggle('active');
+        });
+        
+        // Search autocomplete
+        const searchInput = document.getElementById('search-input');
+        const autocompleteDropdown = document.getElementById('autocomplete-dropdown');
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase();
+            autocompleteDropdown.innerHTML = '';
+            if (query) {
+                const matches = parkingData.filter(spot => spot.name.toLowerCase().includes(query) || spot.address.toLowerCase().includes(query));
+                matches.forEach(spot => {
+                    const item = document.createElement('div');
+                    item.className = 'autocomplete-item';
+                    item.textContent = spot.name;
+                    item.addEventListener('click', () => {
+                        searchInput.value = spot.name;
+                        autocompleteDropdown.style.display = 'none';
+                        alert(`Selected: ${spot.name} (Demo: Would zoom map to this location)`);
+                    });
+                    autocompleteDropdown.appendChild(item);
+                });
+                autocompleteDropdown.style.display = matches.length ? 'block' : 'none';
+            } else {
+                autocompleteDropdown.style.display = 'none';
+            }
+        });
+        
+        // Search button
+        document.getElementById('search-button').addEventListener('click', () => {
+            const query = searchInput.value;
+            alert(`Searching for: ${query} (Demo: Would display parking results)`);
+        });
+        
+        // Filter summary
+        const filters = ['filter-price', 'filter-distance', 'filter-availability', 'filter-type'];
+        const filterSummary = document.getElementById('filter-summary');
+        filters.forEach(filterId => {
+            document.getElementById(filterId).addEventListener('change', () => {
+                const activeFilters = filters.map(id => {
+                    const select = document.getElementById(id);
+                    return select.value !== 'any' ? `${id.split('-')[1]}: ${select.value}` : '';
+                }).filter(f => f).join(', ');
+                filterSummary.textContent = activeFilters ? `Active filters: ${activeFilters}` : 'No filters applied';
+                alert(`Filters applied: ${activeFilters || 'None'} (Demo: Would update parking list)`);
+            });
+        });
+        
+        // Favorites system
+        const favoriteButtons = document.querySelectorAll('.favorite-btn');
+        favoriteButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const card = btn.closest('.parking-card');
+                const id = card.dataset.id;
+                btn.classList.toggle('saved');
+                alert(`${btn.classList.contains('saved') ? 'Saved' : 'Removed'} parking spot (ID: ${id}) to favorites`);
+            });
+        });
+        
+        // Parking details modal
+        const modal = document.getElementById('parking-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalAddress = document.getElementById('modal-address');
+        const modalPrice = document.getElementById('modal-price');
+        const modalAvailability = document.getElementById('modal-availability');
+        const modalHours = document.getElementById('modal-hours');
+        const modalRestrictions = document.getElementById('modal-restrictions');
+        const detailsButtons = document.querySelectorAll('.details-btn');
+        detailsButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const card = btn.closest('.parking-card');
+                const id = card.dataset.id;
+                const spot = parkingData.find(s => s.id == id);
+                modalTitle.textContent = spot.name;
+                modalAddress.textContent = `Address: ${spot.address}`;
+                modalPrice.textContent = `Price: ${spot.price}`;
+                modalAvailability.textContent = `Availability: ${spot.availability}`;
+                modalHours.textContent = `Operating Hours: ${spot.hours}`;
+                modalRestrictions.textContent = `Restrictions: ${spot.restrictions}`;
+                modal.style.display = 'flex';
+            });
+        });
+        
+        document.querySelector('.modal-close').addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+        
+        // Community report button
+        document.getElementById('report-button').addEventListener('click', () => {
+            alert('Thank you for reporting parking availability! (Demo: Would update availability data)');
+        });
+        
+        // Back to top button
+        const backToTop = document.getElementById('back-to-top');
+        window.addEventListener('scroll', () => {
+            backToTop.style.display = window.scrollY > 300 ? 'block' : 'none';
+        });
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
