@@ -46,16 +46,13 @@
         }
         
         .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
             display: flex;
             align-items: center;
         }
         
         .logo-icon {
-            margin-right: 8px;
-            width: 40px;
-            height: 40px;
+            width: 120px;
+            height: auto;
         }
         
         .nav-links {
@@ -91,8 +88,7 @@
             margin: 1rem auto;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             max-width: 1200px;
-            position: sticky;
-            top: 60px;
+            position: relative;
             z-index: 99;
         }
         
@@ -637,6 +633,10 @@
         
         /* Mobile responsiveness - enhanced */
         @media (max-width: 768px) {
+            .logo-icon {
+                width: 100px;
+            }
+            
             .nav-links {
                 display: none;
                 flex-direction: column;
@@ -723,6 +723,10 @@
         }
         
         @media (max-width: 480px) {
+            .logo-icon {
+                width: 80px;
+            }
+            
             .logo {
                 font-size: 1.2rem;
             }
@@ -768,7 +772,7 @@
     <header>
         <nav>
             <div class="logo">
-                <img src="images/P Spot Logo.png" alt="CarSpot Logo" class="logo-icon"> CarSpot
+                <img src="images/P Spot Logo.jpg" alt="CarSpot Logo" class="logo-icon">
             </div>
             <span class="hamburger">☰</span>
             <ul class="nav-links">
