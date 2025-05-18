@@ -148,36 +148,124 @@
             background-color: var(--light);
         }
         
-        .filters {
+        .filters-dropdown {
+            position: relative;
+            margin-bottom: 0.5rem;
+        }
+        
+        .filters-toggle {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.8rem 1.2rem;
+            font-weight: 500;
+            cursor: pointer;
             display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+        
+        .filters-toggle:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .filters-toggle:after {
+            content: '▼';
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+            transition: transform 0.3s;
+        }
+        
+        .filters-toggle.active:after {
+            transform: rotate(180deg);
+        }
+        
+        .filters {
+            display: none;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 1rem;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 98;
+            margin-top: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .filters.active {
+            display: block;
         }
         
         .filter-item {
             display: flex;
             align-items: center;
-            background-color: var(--light);
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
+            justify-content: space-between;
+            padding: 0.7rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .filter-item:last-child {
+            border-bottom: none;
         }
         
         .filter-item label {
-            margin-right: 0.5rem;
             font-weight: 500;
+            flex: 1;
         }
         
         .filter-item select {
-            border: none;
-            background-color: transparent;
+            border: 1px solid #ddd;
+            background-color: white;
             font-size: 0.9rem;
+            padding: 0.4rem;
+            border-radius: 4px;
+            width: 50%;
+        }
+        
+        .filter-button-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .filter-button {
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .filter-apply {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+        }
+        
+        .filter-apply:hover {
+            background-color: #27ae60;
+        }
+        
+        .filter-reset {
+            background-color: white;
+            color: var(--gray);
+            border: 1px solid #ddd;
+        }
+        
+        .filter-reset:hover {
+            background-color: #f8f9fa;
         }
         
         .filter-summary {
             margin-top: 0.5rem;
             font-size: 0.9rem;
             color: var(--dark);
+            padding: 0.3rem 0;
         }
         
         .map-container {
@@ -585,13 +673,27 @@
             }
             
             .filters {
-                flex-direction: column;
-                gap: 0.5rem;
+                width: 100%;
+                position: fixed;
+                left: 0;
+                right: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                margin: 0 auto;
+                max-width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
+                z-index: 102;
             }
             
             .filter-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .filter-item select {
                 width: 100%;
-                justify-content: space-between;
+                margin-top: 0.5rem;
             }
             
             .map-overlay {
@@ -685,44 +787,51 @@
                 <div class="autocomplete-dropdown" id="autocomplete-dropdown"></div>
                 <button id="search-button">Search</button>
             </div>
-            <div class="filters">
-                <div class="filter-item">
-                    <label>Price:</label>
-                    <select id="filter-price">
-                        <option value="any">Any</option>
-                        <option value="0-5">$0-$5</option>
-                        <option value="5-10">$5-$10</option>
-                        <option value="10-20">$10-$20</option>
-                        <option value="20+">$20+</option>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <label>Distance:</label>
-                    <select id="filter-distance">
-                        <option value="any">Any</option>
-                        <option value="0.5">< 0.5 km</option>
-                        <option value="1">< 1 km</option>
-                        <option value="2">< 2 km</option>
-                        <option value="5">< 5 km</option>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <label>Availability:</label>
-                    <select id="filter-availability">
-                        <option value="any">Any</option>
-                        <option value="high">High</option>
-                        <option value="medium">Medium</option>
-                        <option value="low">Low</option>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <label>Type:</label>
-                    <select id="filter-type">
-                        <option value="any">Any</option>
-                        <option value="street">Street Parking</option>
-                        <option value="garage">Parking Garage</option>
-                        <option value="private">Private Lot</option>
-                    </select>
+            <div class="filters-dropdown">
+                <button class="filters-toggle" id="filters-toggle">Filter Options <span class="filter-count"></span></button>
+                <div class="filters" id="filters-container">
+                    <div class="filter-item">
+                        <label>Price:</label>
+                        <select id="filter-price">
+                            <option value="any">Any</option>
+                            <option value="0-5">$0-$5</option>
+                            <option value="5-10">$5-$10</option>
+                            <option value="10-20">$10-$20</option>
+                            <option value="20+">$20+</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>Distance:</label>
+                        <select id="filter-distance">
+                            <option value="any">Any</option>
+                            <option value="0.5">< 0.5 km</option>
+                            <option value="1">< 1 km</option>
+                            <option value="2">< 2 km</option>
+                            <option value="5">< 5 km</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>Availability:</label>
+                        <select id="filter-availability">
+                            <option value="any">Any</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>Type:</label>
+                        <select id="filter-type">
+                            <option value="any">Any</option>
+                            <option value="street">Street Parking</option>
+                            <option value="garage">Parking Garage</option>
+                            <option value="private">Private Lot</option>
+                        </select>
+                    </div>
+                    <div class="filter-button-group">
+                        <button class="filter-button filter-reset" id="filter-reset">Reset</button>
+                        <button class="filter-button filter-apply" id="filter-apply">Apply Filters</button>
+                    </div>
                 </div>
             </div>
             <div class="filter-summary" id="filter-summary">No filters applied</div>
@@ -1001,19 +1110,63 @@
             alert(`Searching for: ${query} (Demo: Would display parking results)`);
         });
         
-        // Filter summary
+        // Filter dropdown functionality
+        const filtersToggle = document.getElementById('filters-toggle');
+        const filtersContainer = document.getElementById('filters-container');
+        const filterCount = document.querySelector('.filter-count');
+        
+        filtersToggle.addEventListener('click', () => {
+            filtersToggle.classList.toggle('active');
+            filtersContainer.classList.toggle('active');
+        });
+        
+        // Close filters dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.filters-dropdown') && filtersContainer.classList.contains('active')) {
+                filtersToggle.classList.remove('active');
+                filtersContainer.classList.remove('active');
+            }
+        });
+        
+        // Filter summary and apply/reset
         const filters = ['filter-price', 'filter-distance', 'filter-availability', 'filter-type'];
         const filterSummary = document.getElementById('filter-summary');
-        filters.forEach(filterId => {
-            document.getElementById(filterId).addEventListener('change', () => {
-                const activeFilters = filters.map(id => {
-                    const select = document.getElementById(id);
-                    return select.value !== 'any' ? `${id.split('-')[1]}: ${select.value}` : '';
-                }).filter(f => f).join(', ');
-                filterSummary.textContent = activeFilters ? `Active filters: ${activeFilters}` : 'No filters applied';
-                alert(`Filters applied: ${activeFilters || 'None'} (Demo: Would update parking list)`);
-            });
+        const filterApply = document.getElementById('filter-apply');
+        const filterReset = document.getElementById('filter-reset');
+        
+        function updateFilterSummary() {
+            const activeFilters = filters.map(id => {
+                const select = document.getElementById(id);
+                return select.value !== 'any' ? `${id.split('-')[1]}: ${select.value}` : '';
+            }).filter(f => f);
+            
+            filterSummary.textContent = activeFilters.length ? `Active filters: ${activeFilters.join(', ')}` : 'No filters applied';
+            
+            // Update filter count badge
+            if (activeFilters.length > 0) {
+                filterCount.textContent = `(${activeFilters.length})`;
+            } else {
+                filterCount.textContent = '';
+            }
+        }
+        
+        filterApply.addEventListener('click', () => {
+            updateFilterSummary();
+            filtersToggle.classList.remove('active');
+            filtersContainer.classList.remove('active');
+            alert('Filters applied! (Demo: Would update parking list)');
         });
+        
+        filterReset.addEventListener('click', () => {
+            filters.forEach(id => {
+                document.getElementById(id).value = 'any';
+            });
+            updateFilterSummary();
+            alert('Filters reset! (Demo: Would reset parking list)');
+        });
+        
+        // Initialize filter count
+        updateFilterSummary();
         
         // Favorites system
         const favoriteButtons = document.querySelectorAll('.favorite-btn');
